@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "cc-cloud"
+version = "0.1.0"
+description = "CC-Cloud is part of the Curious Containers project. It allows cc-agency users to upload and download data to cc-agency's internal cloud storage. The data of the cloud storage can be mounted into a curious container."
+authors = ["Dominik Probst <Dominik.Probst@htw-berlin.de>"]
+license = "AGPL-3.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Flask = "^2.3.2"
+cc-agency = "^9.1.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

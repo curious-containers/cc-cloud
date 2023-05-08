@@ -22,4 +22,6 @@ mongo:
   password: "SECRET"
 
 cloud:
-  upload_directory: '/var/lib/cc_cloud'
+  cc_cloud_directory: '/var/lib/cc_cloud'
+  upload_directory: '/var/lib/cc_cloud/users'
+  user_storage_limit: '50M'

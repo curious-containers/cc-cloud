@@ -1,17 +1,12 @@
-import os
-
-from flask import request, send_from_directory
-from werkzeug.utils import secure_filename
+from flask import request, send_file
 from cc_agency.commons.helper import create_flask_response
 
 
-def cloud_routes(app, mongo, auth):
+def cloud_routes(app, auth, file_manager):
     """
     Creates the cloud webinterface endpoints.
 
     :param app: The flask app to attach to
-    :param mongo: The mongo client
-    :type mongo: Mongo
     :param auth: The authorization module to use
     :type auth: Auth
     """
@@ -21,54 +16,34 @@ def cloud_routes(app, mongo, auth):
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         path = request.args.get('path')
         
-        print(is_secure_path(app.config['UPLOAD_FOLDER'], path))
+        file = file_manager.download_file(user, path)
         
-        #TODO: send_from_directory limit dir to user space in upload_folder
+        if not file:
+            return create_flask_response("invalid path", auth, user.authentication_cookie)
+        try:
+            return send_file(file, as_attachment=True)
+        except FileNotFoundError:
+            return create_flask_response("file not found", auth, user.authentication_cookie)
+        except IsADirectoryError:
+            return create_flask_response("cannot download directorys", auth, user.authentication_cookie)
         
-        return send_from_directory(app.config['UPLOAD_FOLDER'], path, as_attachment=True)
-        #return create_flask_response("ok", auth, user.authentication_cookie)
     
     @app.route('/file', methods=['PUT'])
     def upload_file():
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         
-        print(f"files: {request.files}")
-        if request.files:
-            for filename, file in request.files.items():
-                if file.filename == '':
-                    print('No selected file')
-                if filename == '':
-                    filename = file.filename
-                
-                if file:
-                    filename = secure_filename(filename)
-                    print(filename)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        else:
-            print("no file in request")
+        file_manager.upload_file(user, request.files)
         
         return create_flask_response("ok", auth, user.authentication_cookie)
+    
     
     @app.route('/file', methods=['DELETE'])
     def delete_file():
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         path = request.args.get('path')
         
-        filename = secure_filename(path)
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        try:
-            print(filename)
-            os.remove(filename)
-        except OSError:
-            pass
+        deleted = file_manager.delete_file(user, path)
+        response_string = 'element deleted' if deleted else 'element not found'
         
-        return create_flask_response("ok", auth, user.authentication_cookie)
-    
-    
-    def is_secure_path(basedir, path):
-        path = path.lstrip("/")
-        path = os.path.join(basedir, path)
-        path = os.path.abspath(path)
-        commonpath = os.path.commonpath((basedir, path))
-        return commonpath == basedir
+        return create_flask_response(response_string, auth, user.authentication_cookie)
         

@@ -49,4 +49,4 @@ def get_version():
         user.authentication_cookie
     )
     
-cloud_routes(app, mongo, auth)
+cloud_routes(app, auth, file_manager)

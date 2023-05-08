@@ -4,7 +4,7 @@ import shutil
 class FileManager:
     
     def __init__(self, conf):
-        self.upload_folder = '/home/dominik/cloud'
+        self.upload_dir = conf['cloud']['upload_directory']
     
     def download_file(self, user, path):        
         if not self.is_secure_path(user, path):
@@ -59,17 +59,17 @@ class FileManager:
     
     
     def is_secure_path(self, user, path):
-        user_upload_folder = self.get_user_upload_folder(user)
+        user_upload_dir = self.get_user_upload_directory(user)
         path = path.lstrip("/")
-        path = os.path.join(user_upload_folder, path)
+        path = os.path.join(user_upload_dir, path)
         path = os.path.abspath(path)
-        commonpath = os.path.commonpath((user_upload_folder, path))
-        return commonpath == user_upload_folder
+        commonpath = os.path.commonpath((user_upload_dir, path))
+        return commonpath == user_upload_dir
     
-    def get_user_upload_folder(self, user):
-        return os.path.join(self.upload_folder, user.username)
+    def get_user_upload_directory(self, user):
+        return os.path.join(self.upload_dir, user.username)
     
     def get_full_filepath(self, user, filename):
         filepath = os.path.normpath(filename)
         filepath = filepath.lstrip("/")
-        return os.path.join(self.get_user_upload_folder(user), filepath)
+        return os.path.join(self.get_user_upload_directory(user), filepath)

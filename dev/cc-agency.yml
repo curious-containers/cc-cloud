@@ -20,3 +20,6 @@ mongo:
   db: "ccagency"
   username: "ccadmin"
   password: "SECRET"
+
+cloud:
+  upload_directory: '/var/lib/cc_cloud'

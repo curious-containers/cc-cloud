@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from cc_cloud.filesystem_manager import FilesystemManager
+from cc_cloud.system.filesystem_manager import FilesystemManager
 
 class FileManager:
     

@@ -9,8 +9,8 @@ from cc_agency.commons.db import Mongo
 from cc_agency.broker.auth import Auth
 
 from cc_cloud.version import VERSION as CLOUD_VERSION
-from cc_cloud.file_manager import FileManager
-from cc_cloud.routes import cloud_routes
+from cc_cloud.system.file_manager import FileManager
+from cc_cloud.rest.routes import cloud_routes
 
 
 DESCRIPTION = 'CC-Cloud webinterface'

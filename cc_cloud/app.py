@@ -9,8 +9,8 @@ from cc_agency.commons.db import Mongo
 from cc_agency.broker.auth import Auth
 
 from cc_cloud.version import VERSION as CLOUD_VERSION
-from cc_cloud.system.file_manager import FileManager
-from cc_cloud.rest.routes import cloud_routes
+from cc_cloud.service.file_service import FileService
+from cc_cloud.routes.routes import cloud_routes
 
 
 DESCRIPTION = 'CC-Cloud webinterface'
@@ -29,7 +29,7 @@ args = parser.parse_args()
 conf = Conf(args.conf_file)
 mongo = Mongo(conf)
 auth = Auth(conf, mongo)
-file_manager = FileManager(conf)
+file_manager = FileService(conf)
 
 @app.route('/', methods=['GET'])
 def get_root():

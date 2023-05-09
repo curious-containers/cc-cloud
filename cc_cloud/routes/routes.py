@@ -2,7 +2,7 @@ from flask import request, send_file
 from cc_agency.commons.helper import create_flask_response
 
 
-def cloud_routes(app, auth, file_manager):
+def cloud_routes(app, auth, file_service):
     """
     Creates the cloud webinterface endpoints.
 
@@ -16,10 +16,11 @@ def cloud_routes(app, auth, file_manager):
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         path = request.args.get('path')
         
-        file = file_manager.download_file(user, path)
+        file = file_service.download_file(user, path)
         
         if not file:
             return create_flask_response("invalid path", auth, user.authentication_cookie)
+        
         try:
             return send_file(file, as_attachment=True)
         except FileNotFoundError:
@@ -32,7 +33,7 @@ def cloud_routes(app, auth, file_manager):
     def upload_file():
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         
-        file_manager.upload_file(user, request.files)
+        file_service.upload_file(user, request.files)
         
         return create_flask_response("ok", auth, user.authentication_cookie)
     
@@ -42,7 +43,7 @@ def cloud_routes(app, auth, file_manager):
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         path = request.args.get('path')
         
-        deleted = file_manager.delete_file(user, path)
+        deleted = file_service.delete_file(user, path)
         response_string = 'element deleted' if deleted else 'element not found'
         
         return create_flask_response(response_string, auth, user.authentication_cookie)

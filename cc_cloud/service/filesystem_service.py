@@ -1,6 +1,6 @@
 import os
 
-class FilesystemManager:
+class FilesystemService:
     
     FILESYSTEM = 'ext4'
     FILESYSTEM_SUBFOLDER = 'filesystems'
@@ -57,7 +57,7 @@ class FilesystemManager:
             self.umount(user)
         self.delete(user)
         self.create(user, size)
-        
+    
     def get_size(self, user):
         filepath = self.get_filepath(user)
         return os.path.getsize(filepath)

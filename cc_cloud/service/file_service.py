@@ -1,12 +1,12 @@
 import os
 import shutil
 
-from cc_cloud.system.filesystem_manager import FilesystemManager
+from cc_cloud.service.filesystem_service import FilesystemService
 
-class FileManager:
+class FileService:
     
     def __init__(self, conf):
-        self.filesystem_manager = FilesystemManager(conf)
+        self.filesystem_service = FilesystemService(conf)
         self.upload_dir = '/var/lib/cc_cloud/users'
     
     def download_file(self, user, path):
@@ -80,7 +80,7 @@ class FileManager:
         return os.path.join(self.get_user_upload_directory(user), filepath)
     
     def filesystem_exists_or_create(self, user):
-        if not self.filesystem_manager.user_filessystem_exists(user):
-            self.filesystem_manager.create(user)
-        if not self.filesystem_manager.is_mounted(user):
-            self.filesystem_manager.mount(user)
+        if not self.filesystem_service.user_filessystem_exists(user):
+            self.filesystem_service.create(user)
+        if not self.filesystem_service.is_mounted(user):
+            self.filesystem_service.mount(user)

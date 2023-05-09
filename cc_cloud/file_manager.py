@@ -1,24 +1,28 @@
 import os
 import shutil
 
+from cc_cloud.filesystem_manager import FilesystemManager
+
 class FileManager:
     
     def __init__(self, conf):
-        self.upload_dir = conf['cloud']['upload_directory']
+        self.filesystem_manager = FilesystemManager(conf)
+        self.upload_dir = '/var/lib/cc_cloud/users'
     
-    def download_file(self, user, path):        
+    def download_file(self, user, path):
         if not self.is_secure_path(user, path):
             return None
+        
+        self.filesystem_exists_or_create(user)
         
         filepath = self.get_full_filepath(user, path)
         return filepath
     
     
     def upload_file(self, user, files):
-        # TODO:
-        # check users upload limit (storage size)
-        
         if files:
+            self.filesystem_exists_or_create(user)
+            
             for filename, file in files.items():
                 
                 if file.filename == '':
@@ -42,8 +46,9 @@ class FileManager:
         if not self.is_secure_path(user, path):
             return False
         
-        filepath = self.get_full_filepath(user, path)
+        self.filesystem_exists_or_create(user)
         
+        filepath = self.get_full_filepath(user, path)
         if os.path.isfile(filepath):
             try:
                 os.remove(filepath)
@@ -73,3 +78,9 @@ class FileManager:
         filepath = os.path.normpath(filename)
         filepath = filepath.lstrip("/")
         return os.path.join(self.get_user_upload_directory(user), filepath)
+    
+    def filesystem_exists_or_create(self, user):
+        if not self.filesystem_manager.user_filessystem_exists(user):
+            self.filesystem_manager.create(user)
+        if not self.filesystem_manager.is_mounted(user):
+            self.filesystem_manager.mount(user)

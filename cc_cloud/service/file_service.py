@@ -7,7 +7,7 @@ class FileService:
     
     def __init__(self, conf):
         self.filesystem_service = FilesystemService(conf)
-        self.upload_dir = '/var/lib/cc_cloud/users'
+        self.upload_dir = conf.get('upload_directory', '/var/lib/cc_cloud/users')
     
     def download_file(self, user, path):
         if not self.is_secure_path(user, path):

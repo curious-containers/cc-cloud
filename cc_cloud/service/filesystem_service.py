@@ -6,9 +6,10 @@ class FilesystemService:
     FILESYSTEM_SUBFOLDER = 'filesystems'
     
     def __init__(self, conf):
-        self.filesystem_dir = os.path.join('/var/lib/cc_cloud', self.FILESYSTEM_SUBFOLDER)
-        self.upload_dir = '/var/lib/cc_cloud/users'
-        self.user_storage_limit = 52428800
+        self.cc_cloud_directory = conf.get('cc_cloud_directory', '/var/lib/cc_cloud')
+        self.upload_dir = conf.get('upload_directory', '/var/lib/cc_cloud/users')
+        self.user_storage_limit = conf.get('user_storage_limit', 52428800)
+        self.filesystem_dir = os.path.join(self.cc_cloud_directory, self.FILESYSTEM_SUBFOLDER)
     
     def create(self, user, size=None):
         filepath = self.get_filepath(user)
@@ -49,6 +50,9 @@ class FilesystemService:
         with open(filepath, 'a') as file:
             file.truncate(size)
         lo_device = self.get_loop_device(filepath)
+        
+        print(f"\n\n\n{lo_device}\n\n\n")
+        
         os.system(f"losetup -c '{lo_device}'")
         os.system(f"resize2fs '{lo_device}'")
     

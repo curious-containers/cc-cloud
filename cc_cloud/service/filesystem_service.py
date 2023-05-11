@@ -6,9 +6,9 @@ class FilesystemService:
     FILESYSTEM_SUBFOLDER = 'filesystems'
     
     def __init__(self, conf):
-        self.cc_cloud_directory = conf.get('cc_cloud_directory', '/var/lib/cc_cloud')
-        self.upload_dir = conf.get('upload_directory', '/var/lib/cc_cloud/users')
-        self.user_storage_limit = conf.get('user_storage_limit', 52428800)
+        self.cc_cloud_directory = conf.d.get('cc_cloud_directory', '/var/lib/cc_cloud')
+        self.upload_dir = conf.d.get('upload_directory', '/var/lib/cc_cloud/users')
+        self.user_storage_limit = conf.d.get('user_storage_limit', 52428800)
         self.filesystem_dir = os.path.join(self.cc_cloud_directory, self.FILESYSTEM_SUBFOLDER)
     
     def create(self, user, size=None):

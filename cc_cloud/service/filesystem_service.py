@@ -166,8 +166,7 @@ class FilesystemService:
         :param user: Check for this user if the filesystem existed and is mounted
         :type user: cc_agency.broker.auth.Auth.User
         """
-        if not self.filesystem_service.user_filessystem_exists(user):
-            self.filesystem_service.create(user)
-        if not self.filesystem_service.is_mounted(user):
-            self.filesystem_service.mount(user)
-    
+        if not self.user_filessystem_exists(user):
+            self.create(user)
+        if not self.is_mounted(user):
+            self.mount(user)

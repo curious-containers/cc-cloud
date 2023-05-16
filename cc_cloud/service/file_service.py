@@ -28,7 +28,7 @@ class FileService:
         if not self.is_secure_path(user, path):
             return None
         
-        self.filesystem_exists_or_create(user)
+        self.filesystem_service.exists_or_create(user)
         
         filepath = self.get_full_filepath(user, path)
         return filepath
@@ -43,7 +43,7 @@ class FileService:
         :type files: werkzeug.datastructures.structures.ImmutableMultiDict
         """
         if files:
-            self.filesystem_exists_or_create(user)
+            self.filesystem_service.exists_or_create(user)
             
             for filename, file in files.items():
                 
@@ -77,7 +77,7 @@ class FileService:
         if not self.is_secure_path(user, path):
             return False
         
-        self.filesystem_exists_or_create(user)
+        self.filesystem_service.exists_or_create(user)
         
         filepath = self.get_full_filepath(user, path)
         if os.path.isfile(filepath):
@@ -134,15 +134,3 @@ class FileService:
         filepath = os.path.normpath(filename)
         filepath = filepath.lstrip("/")
         return os.path.join(self.get_user_upload_directory(user), filepath)
-    
-    def filesystem_exists_or_create(self, user):
-        """Checks if the user filesystem already exists is mounted.
-        If not a new filesystem will be created and mounted.
-
-        :param user: Check for this user if the filesystem existed and is mounted.
-        :type user: cc_agency.broker.auth.Auth.User
-        """
-        if not self.filesystem_service.user_filessystem_exists(user):
-            self.filesystem_service.create(user)
-        if not self.filesystem_service.is_mounted(user):
-            self.filesystem_service.mount(user)

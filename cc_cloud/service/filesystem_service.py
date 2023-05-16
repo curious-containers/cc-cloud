@@ -50,9 +50,6 @@ class FilesystemService:
         with open(filepath, 'a') as file:
             file.truncate(size)
         lo_device = self.get_loop_device(filepath)
-        
-        print(f"\n\n\n{lo_device}\n\n\n")
-        
         os.system(f"losetup -c '{lo_device}'")
         os.system(f"resize2fs '{lo_device}'")
     
@@ -76,4 +73,16 @@ class FilesystemService:
     
     def get_mountpoint(self, user):
         return os.path.join(self.upload_dir, user.username)
+    
+    def exists_or_create(self, user):
+        """Checks if the user filesystem already exists is mounted.
+        If not a new filesystem will be created and mounted.
+
+        :param user: Check for this user if the filesystem existed and is mounted
+        :type user: cc_agency.broker.auth.Auth.User
+        """
+        if not self.filesystem_service.user_filessystem_exists(user):
+            self.filesystem_service.create(user)
+        if not self.filesystem_service.is_mounted(user):
+            self.filesystem_service.mount(user)
     

@@ -118,3 +118,29 @@ def test_get_filepath(fs_service, user):
 def test_get_mountpoint(fs_service, user):
     filepath = fs_service.get_mountpoint(user)
     assert filepath == '/test/users/testuser'
+
+
+@patch.object(FilesystemService, "user_filessystem_exists", return_value=False)
+@patch.object(FilesystemService, "create")
+@patch.object(FilesystemService, "is_mounted", return_value=False)
+@patch.object(FilesystemService, "mount")
+def test_exists_or_create_False(mock_mount, mock_is_mounted, mock_create, mock_filesystem_exists, fs_service, user):
+    fs_service.exists_or_create(user)
+
+    mock_filesystem_exists.assert_called_once_with(user)
+    mock_create.assert_called_once_with(user)
+    mock_is_mounted.assert_called_once_with(user)
+    mock_mount.assert_called_once_with(user)
+
+
+@patch.object(FilesystemService, "user_filessystem_exists", return_value=True)
+@patch.object(FilesystemService, "create")
+@patch.object(FilesystemService, "is_mounted", return_value=True)
+@patch.object(FilesystemService, "mount")
+def test_filesystem_exists_or_create_True(mock_mount, mock_is_mounted, mock_create, mock_filesystem_exists, fs_service, user):
+    fs_service.exists_or_create(user)
+
+    mock_filesystem_exists.assert_called_once_with(user)
+    mock_create.assert_not_called()
+    mock_is_mounted.assert_called_once_with(user)
+    mock_mount.assert_not_called()

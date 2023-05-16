@@ -26,32 +26,6 @@ def user():
     return Auth.User(username=username, is_admin=is_admin)
 
 
-@patch.object(FilesystemService, "user_filessystem_exists", return_value=False)
-@patch.object(FilesystemService, "create")
-@patch.object(FilesystemService, "is_mounted", return_value=False)
-@patch.object(FilesystemService, "mount")
-def test_filesystem_exists_or_create_False(mock_mount, mock_is_mounted, mock_create, mock_filesystem_exists, user, file_service):
-    file_service.filesystem_exists_or_create(user)
-
-    mock_filesystem_exists.assert_called_once_with(user)
-    mock_create.assert_called_once_with(user)
-    mock_is_mounted.assert_called_once_with(user)
-    mock_mount.assert_called_once_with(user)
-
-
-@patch.object(FilesystemService, "user_filessystem_exists", return_value=True)
-@patch.object(FilesystemService, "create")
-@patch.object(FilesystemService, "is_mounted", return_value=True)
-@patch.object(FilesystemService, "mount")
-def test_filesystem_exists_or_create_True(mock_mount, mock_is_mounted, mock_create, mock_filesystem_exists, user, file_service):
-    file_service.filesystem_exists_or_create(user)
-
-    mock_filesystem_exists.assert_called_once_with(user)
-    mock_create.assert_not_called()
-    mock_is_mounted.assert_called_once_with(user)
-    mock_mount.assert_not_called()
-
-
 @mark.parametrize('test_path, expected_path',[
     ('some/path/file.txt', True),
     ('some/path/../file.txt', True),
@@ -81,7 +55,7 @@ def test_get_full_filepath(test_file, expected_file, user, file_service):
 
 @patch('os.path.isfile', return_value=True)
 @patch('os.remove', Mock())
-@patch.object(FileService, "filesystem_exists_or_create", Mock(return_value=True))
+@patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_delete_file_success(user, file_service):
     path = '/some/path/file.txt'
     result = file_service.delete_file(user, path)
@@ -90,7 +64,7 @@ def test_delete_file_success(user, file_service):
 
 @patch('os.path.isfile', return_value=True)
 @patch('os.remove', Mock(side_effect=OSError()))
-@patch.object(FileService, "filesystem_exists_or_create", Mock(return_value=True))
+@patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_delete_file_failure(user, file_service):
     path = '/some/path/file.txt'
     result = file_service.delete_file(user, path)
@@ -99,7 +73,7 @@ def test_delete_file_failure(user, file_service):
 
 @patch('os.path.isfile', return_value=False)
 @patch('cc_cloud.service.file_service.shutil.rmtree', Mock())
-@patch.object(FileService, "filesystem_exists_or_create", Mock(return_value=True))
+@patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_delete_file_success_dir(user, file_service):
     path = '/some/path'
     result = file_service.delete_file(user, path)
@@ -108,14 +82,14 @@ def test_delete_file_success_dir(user, file_service):
 
 @patch('os.path.isfile', return_value=False)
 @patch('cc_cloud.service.file_service.shutil.rmtree', Mock(side_effect=OSError()))
-@patch.object(FileService, "filesystem_exists_or_create", Mock(return_value=True))
+@patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_delete_file_failure_dir(user, file_service):
     path = '/some/path'
     result = file_service.delete_file(user, path)
     assert result == False
     
 
-@patch.object(FileService, "filesystem_exists_or_create", Mock(return_value=True))
+@patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_upload_file(user, file_service):
     file1 = FileStorage(filename='/some/path/file1.txt')
     file2 = FileStorage(filename='file2.txt')
@@ -133,7 +107,7 @@ def test_upload_file(user, file_service):
     file2.save.assert_called_once()
 
 
-@patch.object(FileService, "filesystem_exists_or_create", Mock(return_value=True))
+@patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_download_file(user, file_service):
     filepath = '/some/path/file1.txt'
     result = file_service.download_file(user, filepath)

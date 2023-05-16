@@ -9,10 +9,6 @@ on:
   pull_request:
     branches: [ "develop" ]
 
-env:
-  POETRY_VERSION: "1.1.12"
-  POETRY_URL: https://install.python-poetry.org
-
 jobs:
   build:
 
@@ -20,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -29,33 +25,30 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-      id: setup_python
     
     # Install dependencies with poetry
-    - name: Cache Poetry cache
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pypoetry
-        key: poetry-cache-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ env.POETRY_VERSION }}
-    - name: Cache Packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.local
-        key: poetry-local-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('.github/workflows/*.yml') }}
-    - name: Install Poetry ${{ env.POETRY_VERSION }}
+    - name: Install poetry
       run: |
-        curl -sSL ${{ env.POETRY_URL }} | python - --version ${{ env.POETRY_VERSION }}
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-    - name: Install Dependencies
-      run: poetry install
+        python -m pip install poetry==1.1.12
+    - name: Configure poetry
+      run: |
+        python -m poetry config virtualenvs.in-project true
+    - name: Cache the virtualenv
+      uses: actions/cache@v2
+      with:
+        path: ./.venv
+        key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+    - name: Install dependencies
+      run: |
+        python -m poetry install
     
     # run tests
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        python -m poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        python -m poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        python -m poetry run pytest

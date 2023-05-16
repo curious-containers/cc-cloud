@@ -4,7 +4,7 @@ from cc_agency.broker.auth import Auth
 from cc_cloud.service.filesystem_service import FilesystemService
 
 
-class MockConf:
+class FakeConf:
     d = {
         'cc_cloud_directory': '/test',
         'upload_directory': '/test/users',
@@ -13,7 +13,7 @@ class MockConf:
 
 @fixture(autouse=True)
 def fs_service():
-    conf = MockConf()
+    conf = FakeConf()
     return FilesystemService(conf=conf)
 
 

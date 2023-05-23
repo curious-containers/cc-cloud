@@ -49,11 +49,14 @@ class FilesystemService:
     
     def find_all_filesystems(self):
         filesystems = []
-        elements = os.listdir(self.filesystem_dir)
-        for el in elements:
-            el_path = os.path.join(self.filesystem_dir, el)
-            if os.path.isfile(el_path):
-                filesystems.append(el)
+        try:
+            elements = os.listdir(self.filesystem_dir)
+            for el in elements:
+                el_path = os.path.join(self.filesystem_dir, el)
+                if os.path.isfile(el_path):
+                    filesystems.append(el)
+        except FileNotFoundError:
+            pass
         return filesystems
     
     def delete(self, fs_name):

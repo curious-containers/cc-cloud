@@ -17,6 +17,7 @@ trustee:
   password: "SECRET"
 
 mongo:
+  host: "mongodb"
   db: "ccagency"
   username: "ccadmin"
   password: "SECRET"

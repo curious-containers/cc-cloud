@@ -1,0 +1,17 @@
+version: '3'
+services:
+  cc_cloud:
+    image: cc_cloud
+    privileged: true
+    networks:
+      - cc-agency-docker_default
+    ports:
+      - 5050:5050
+    deploy:
+      restart_policy:
+        condition: on-failure
+    container_name: cc_cloud
+
+networks:
+  cc-agency-docker_default:
+    external: true

@@ -28,13 +28,15 @@ class FilesystemService:
         filepath = self.get_filepath(fs_name)
         if size == None:
             size = self.user_storage_limit
+        
+        try:
+            os.makedirs(os.path.dirname(filepath))
+            os.makedirs(self.get_mountpoint(fs_name))
+        except (OSError, FileExistsError):
+            pass
         with open(filepath, 'a') as file:
             file.truncate(size)
         os.system(f"mke2fs -t {self.FILESYSTEM} -F '{filepath}'")
-        try:
-            os.makedirs(self.get_mountpoint(fs_name))
-        except FileExistsError:
-            pass
     
     def filessystem_exists(self, fs_name):
         """Check if the filesystem already exists.

@@ -1,6 +1,5 @@
-FROM python:3.10
+FROM python:3.10-bullseye
 
-#RUN apt-get update && apt-get install -y --no-install-recommends build-essential python-dev uwsgi-plugin-python3 && rm -rf /var/lib/apt/lists/*
 RUN pip install poetry==1.4.2 uwsgi
 
 COPY . /cc_cloud

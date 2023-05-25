@@ -31,7 +31,7 @@ conf = Conf(args.conf_file)
 mongo = Mongo(conf)
 auth = Auth(conf, mongo)
 file_manager = FileService(conf)
-cloud = CloudService(conf)
+cloud = CloudService(conf, mongo)
 
 @app.route('/', methods=['GET'])
 def get_root():

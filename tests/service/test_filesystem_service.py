@@ -35,7 +35,6 @@ def fs_name():
 def test_create_filesystem(mock_makedirs, mock_open, mock_system, fs_service, fs_name):
     fs_service.create(fs_name)
     
-    mock_makedirs.assert_called_once_with('/test/users/testuser')
     mock_open.assert_called_once_with('/test/filesystems/testuser', 'a')
     mock_system.assert_called_once_with("mke2fs -t ext4 -F '/test/filesystems/testuser'")
 

@@ -11,7 +11,7 @@ class CloudService:
     
     user_prefix = 'cloud'
     
-    def __init__(self, conf):
+    def __init__(self, conf, mongo):
         """Create a new instance of CloudService.
         All existing file systems of the user are automatically mounted.
 
@@ -21,6 +21,7 @@ class CloudService:
         self.file_service = FileService(conf)
         self.filesystem_service = FilesystemService(conf)
         self.home_dir = '/var/lib/cc_cloud/home'
+        self.mongo = mongo
         self.mount_filesystems()
     
     
@@ -54,7 +55,23 @@ class CloudService:
         local_user = LocalUser(user_ref, self.home_dir)
         if not local_user.exists():
             local_user.create()
+            local_user.set_password()
+            self.add_local_user_to_db(
+                user.username,
+                user_ref,
+                local_user.secret,
+                self.filesystem_service.user_storage_limit)
         return user_ref, local_user
+    
+    
+    def add_local_user_to_db(self, username, ssh_user, ssh_password, size_limit):
+        cloud_users = {
+            'username': username,
+            'ssh_user': ssh_user,
+            'ssh_password': ssh_password,
+            'size_limit': size_limit,
+        }
+        self.mongo.db['cloud_users'].update_one({'username': username}, {'$set': cloud_users}, upsert=True)
     
     
     ## cloud storage actions
@@ -148,6 +165,8 @@ class CloudService:
             return False
         
         user_ref = self.get_user_ref(remove_user)
+        
+        self.mongo.db['cloud_users'].delete_one({'username': remove_user.username})
         
         self.filesystem_service.umount(user_ref)
         self.filesystem_service.delete(user_ref)

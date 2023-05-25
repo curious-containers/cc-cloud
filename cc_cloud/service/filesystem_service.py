@@ -1,4 +1,5 @@
 import os
+import shutil
 
 class FilesystemService:
     
@@ -62,13 +63,18 @@ class FilesystemService:
         return filesystems
     
     def delete(self, fs_name):
-        """Delete the file filesystem.
+        """Delete the file filesystem and mountpoint.
 
         :param fs_name: Delete the filesystem with the name fs_name
         :type fs_name: str
         """
         filepath = self.get_filepath(fs_name)
-        os.remove(filepath)
+        mountpoint = self.get_mountpoint(fs_name)
+        try:
+            os.remove(filepath)
+            shutil.rmtree(mountpoint)
+        except (OSError, FileNotFoundError):
+            pass
     
     def mount(self, fs_name):
         """Mount the filesystem.

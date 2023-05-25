@@ -1,6 +1,7 @@
 import secrets
 import os
 import pwd
+import shutil
 
 class LocalUser:
     
@@ -35,6 +36,12 @@ class LocalUser:
         """
         os.system(f"killall -u {self.username}")
         os.system(f"userdel -r {self.username}")
+        
+        home_dir = os.path.join(self.base_dir, self.username)
+        try:
+            shutil.rmtree(home_dir)
+        except (OSError, FileNotFoundError):
+            pass
         
     
     def set_password(self, password = None):

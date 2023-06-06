@@ -146,8 +146,14 @@ class CloudService:
     
     ## only for admin users
     
-    def create_user():
-        pass
+    def create_user(self, user, create_user):
+        if not user.is_admin:
+            return False
+        
+        user_ref, _ = self.local_user_exists_or_create(create_user)
+        self.filesystem_service.exists_or_create(user_ref)
+        
+        return True
     
     
     def remove_user(self, user, remove_user):

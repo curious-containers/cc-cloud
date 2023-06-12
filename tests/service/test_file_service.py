@@ -9,8 +9,9 @@ from cc_cloud.service.file_service import FileService
 
 class MockConf:
     d = {
-        'cc_cloud_directory': '/test',
-        'upload_directory': '/test/users',
+        'upload_directory_name': 'cloud',
+        'userhome_directory': '/test/users',
+        'filesystem_directory': '/test/filesystems',
         'user_storage_limit': 52428800
     }
 
@@ -45,12 +46,12 @@ def test_is_secure_path(test_path, expected_path, user_ref, file_service):
 
 def test_get_user_upload_directory(user_ref, file_service):
     result = file_service.get_user_upload_directory(user_ref)
-    assert result == '/test/users/testuser'
+    assert result == '/test/users/testuser/cloud'
 
 
 @mark.parametrize('test_file, expected_file',[
-    ('some/path/file.txt', '/test/users/testuser/some/path/file.txt'),
-    ('/file.txt', '/test/users/testuser/file.txt')
+    ('some/path/file.txt', '/test/users/testuser/cloud/some/path/file.txt'),
+    ('/file.txt', '/test/users/testuser/cloud/file.txt')
 ])
 def test_get_full_filepath(test_file, expected_file, user_ref, file_service):
     result = file_service.get_full_filepath(user_ref, test_file)
@@ -115,4 +116,4 @@ def test_upload_file(user_ref, file_service):
 def test_download_file(user_ref, file_service):
     filepath = '/some/path/file1.txt'
     result = file_service.download_file(user_ref, filepath)
-    assert result == '/test/users/testuser/some/path/file1.txt'
+    assert result == '/test/users/testuser/cloud/some/path/file1.txt'

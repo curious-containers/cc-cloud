@@ -11,7 +11,6 @@ class FileService:
         """
         self.upload_directory_name = conf.d.get('upload_directory_name', 'cloud')
         self.userhome_directory = conf.d.get('userhome_directory', '/var/lib/cc_cloud/home')
-        self.upload_dir = os.path.join(self.userhome_directory, self.upload_directory_name)
     
     def download_file(self, user_ref, path):
         """Checks if the user is allowed to access the file. If the path is available and
@@ -112,7 +111,7 @@ class FileService:
         :return: Path to the users directory
         :rtype: str
         """
-        return os.path.join(self.upload_dir, user_ref)
+        return os.path.join(self.userhome_directory, user_ref, self.upload_directory_name)
     
     def get_full_filepath(self, user_ref, filename):
         """Returns the filepath based on the user directory

@@ -1,10 +1,12 @@
 import os
 import shutil
+import pwd
 
 class FilesystemService:
     
     FILESYSTEM = 'ext4'
     FILESYSTEM_SUBFOLDER = 'filesystems'
+    
     
     def __init__(self, conf):
         """Create a new instance of FilesystemService
@@ -14,10 +16,12 @@ class FilesystemService:
         """
         self.upload_directory_name = conf.d.get('upload_directory_name', 'cloud')
         self.userhome_directory = conf.d.get('userhome_directory', '/var/lib/cc_cloud/home')
-        self.upload_dir = os.path.join(self.userhome_directory, self.upload_directory_name)
         self.filesystem_dir = conf.d.get('filesystem_directory', '/var/lib/cc_cloud/filesystems')
         self.user_storage_limit = conf.d.get('user_storage_limit', 52428800)
-    
+        
+        self.root_uid = pwd.getpwnam('root').pw_uid
+        self.root_gid = pwd.getpwnam('root').pw_gid
+        
     def create(self, fs_name, size=None):
         """Creates a new File image and reserves storage space for it.
         The file will be formated as a filesystem.
@@ -34,11 +38,27 @@ class FilesystemService:
         try:
             os.makedirs(os.path.dirname(filepath))
             os.makedirs(self.get_mountpoint(fs_name))
+            self.set_directory_owner(fs_name)
         except (OSError, FileExistsError):
             pass
         with open(filepath, 'a') as file:
             file.truncate(size)
         os.system(f"mke2fs -t {self.FILESYSTEM} -F '{filepath}'")
+    
+    def set_directory_owner(self, username):
+        """Sets the owner of the users home directory to root and the
+        owner of the mountpoint to the cloud user.
+
+        :param username: Name of the cloud user
+        :type username: str
+        """
+        home_dir = os.path.join(self.userhome_directory, username)
+        os.chown(home_dir, self.root_uid, self.root_gid)
+        
+        mountpoint = self.get_mountpoint(username)
+        user_uid = pwd.getpwnam(username).pw_uid
+        user_gid = pwd.getpwnam(username).pw_gid
+        os.chown(mountpoint, user_uid, user_gid)
     
     def filessystem_exists(self, fs_name):
         """Check if the filesystem already exists.
@@ -178,7 +198,7 @@ class FilesystemService:
         :return: Path to the mountpoint
         :rtype: str
         """
-        return os.path.join(self.upload_dir, fs_name)
+        return os.path.join(self.userhome_directory, fs_name, self.upload_directory_name)
     
     def exists_or_create(self, fs_name):
         """Checks if the filesystem already exists is mounted.

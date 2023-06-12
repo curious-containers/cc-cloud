@@ -6,8 +6,9 @@ from cc_cloud.service.filesystem_service import FilesystemService
 
 class FakeConf:
     d = {
-        'cc_cloud_directory': '/test',
-        'upload_directory': '/test/users',
+        'upload_directory_name': 'cloud',
+        'userhome_directory': '/test/users',
+        'filesystem_directory': '/test/filesystems',
         'user_storage_limit': 52428800
     }
 
@@ -54,7 +55,7 @@ def test_delete(mock_remove, fs_service, fs_name):
 @patch('os.system')
 def test_mount(mock_system, fs_service, fs_name):        
     fs_service.mount(fs_name)
-    mock_system.assert_called_once_with("mount '/test/filesystems/testuser' '/test/users/testuser'")
+    mock_system.assert_called_once_with("mount '/test/filesystems/testuser' '/test/users/testuser/cloud'")
 
 
 @patch('os.system')
@@ -121,7 +122,7 @@ def test_get_filepath(fs_service, fs_name):
 
 def test_get_mountpoint(fs_service, fs_name):
     filepath = fs_service.get_mountpoint(fs_name)
-    assert filepath == '/test/users/testuser'
+    assert filepath == '/test/users/testuser/cloud'
 
 
 @patch.object(FilesystemService, "filessystem_exists", return_value=False)

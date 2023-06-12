@@ -47,4 +47,15 @@ def cloud_routes(app, auth, cloud_service):
         response_string = 'element deleted' if deleted else 'element not found'
         
         return create_flask_response(response_string, auth, user.authentication_cookie)
+    
+    
+    @app.route('/create_user', methods=['GET'])
+    def create_user():
+        user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
+        create_username = request.args.get('username')
+        
+        created = cloud_service.create_user(user, create_username)
+        response_string = 'user created' if created else 'could not create user'
+        
+        return create_flask_response(response_string, auth, user.authentication_cookie)
         

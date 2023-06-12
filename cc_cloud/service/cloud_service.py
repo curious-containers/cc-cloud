@@ -2,6 +2,7 @@
 from cc_cloud.service.filesystem_service import FilesystemService
 from cc_cloud.service.file_service import FileService
 from cc_cloud.system.local_user import LocalUser
+from cc_agency.broker.auth import Auth
 
 
 class CloudService:
@@ -146,18 +147,19 @@ class CloudService:
     
     ## only for admin users
     
-    def create_user(self, user, create_user):
+    def create_user(self, user, create_username):
         if not user.is_admin:
             return False
         
+        create_user = Auth.User(create_username, False)
         user_ref, _ = self.local_user_exists_or_create(create_user)
         self.filesystem_service.exists_or_create(user_ref)
         
         return True
     
     
-    def remove_user(self, user, remove_user):
-        """Delete the users (remove_user) filesystem and the local linux user.
+    def remove_user(self, user, remove_username):
+        """Delete the users (remove_username) filesystem and the local linux user.
         The action will only be performed if user is admin. 
 
         :param user: user who wants to perform the action
@@ -170,6 +172,7 @@ class CloudService:
         if not user.is_admin:
             return False
         
+        remove_user = Auth.User(remove_username, False)
         user_ref = self.get_user_ref(remove_user)
         
         self.mongo.db['cloud_users'].delete_one({'username': remove_user.username})

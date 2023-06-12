@@ -37,8 +37,10 @@ class FilesystemService:
         
         try:
             os.makedirs(os.path.dirname(filepath))
+        except (OSError, FileExistsError):
+            pass
+        try:
             os.makedirs(self.get_mountpoint(fs_name))
-            self.set_directory_owner(fs_name)
         except (OSError, FileExistsError):
             pass
         with open(filepath, 'a') as file:
@@ -55,9 +57,11 @@ class FilesystemService:
         home_dir = os.path.join(self.userhome_directory, username)
         os.chown(home_dir, self.root_uid, self.root_gid)
         
+        filesystem = self.get_filepath(username)
         mountpoint = self.get_mountpoint(username)
         user_uid = pwd.getpwnam(username).pw_uid
         user_gid = pwd.getpwnam(username).pw_gid
+        os.chown(filesystem, user_uid, user_gid)
         os.chown(mountpoint, user_uid, user_gid)
     
     def filessystem_exists(self, fs_name):
@@ -106,6 +110,7 @@ class FilesystemService:
         filepath = self.get_filepath(fs_name)
         mountpoint = self.get_mountpoint(fs_name)
         os.system(f"mount '{filepath}' '{mountpoint}'")
+        self.set_directory_owner(fs_name)
     
     def umount(self, fs_name):
         """Umount the filesystem.

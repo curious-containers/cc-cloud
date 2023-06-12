@@ -58,4 +58,15 @@ def cloud_routes(app, auth, cloud_service):
         response_string = 'user created' if created else 'could not create user'
         
         return create_flask_response(response_string, auth, user.authentication_cookie)
+    
+    
+    @app.route('/remove_user', methods=['GET'])
+    def remove_user():
+        user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
+        remove_username = request.args.get('username')
+        
+        removed = cloud_service.remove_user(user, remove_username)
+        response_string = 'user removed' if removed else 'could not remove user'
+        
+        return create_flask_response(response_string, auth, user.authentication_cookie)
         

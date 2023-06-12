@@ -12,10 +12,11 @@ class FilesystemService:
         :param conf: Configuration to load values from
         :type conf: cc_agency.commons.conf.Conf
         """
-        self.cc_cloud_directory = conf.d.get('cc_cloud_directory', '/var/lib/cc_cloud')
-        self.upload_dir = conf.d.get('upload_directory', '/var/lib/cc_cloud/users')
+        self.upload_directory_name = conf.d.get('upload_directory_name', 'cloud')
+        self.userhome_directory = conf.d.get('userhome_directory', '/var/lib/cc_cloud/home')
+        self.upload_dir = os.path.join(self.userhome_directory, self.upload_directory_name)
+        self.filesystem_dir = conf.d.get('filesystem_directory', '/var/lib/cc_cloud/filesystems')
         self.user_storage_limit = conf.d.get('user_storage_limit', 52428800)
-        self.filesystem_dir = os.path.join(self.cc_cloud_directory, self.FILESYSTEM_SUBFOLDER)
     
     def create(self, fs_name, size=None):
         """Creates a new File image and reserves storage space for it.

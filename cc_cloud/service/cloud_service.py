@@ -20,7 +20,7 @@ class CloudService:
         """
         self.file_service = FileService(conf)
         self.filesystem_service = FilesystemService(conf)
-        self.home_dir = '/var/lib/cc_cloud/home'
+        self.home_dir = conf.d.get('userhome_directory', '/var/lib/cc_cloud/home')
         self.mongo = mongo
         self.mount_filesystems()
     

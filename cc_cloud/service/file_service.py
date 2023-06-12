@@ -9,7 +9,9 @@ class FileService:
         :param conf: The cc-cloud configuration file
         :type conf: cc_agency.commons.conf.Conf
         """
-        self.upload_dir = conf.d.get('upload_directory', '/var/lib/cc_cloud/users')
+        self.upload_directory_name = conf.d.get('upload_directory_name', 'cloud')
+        self.userhome_directory = conf.d.get('userhome_directory', '/var/lib/cc_cloud/home')
+        self.upload_dir = os.path.join(self.userhome_directory, self.upload_directory_name)
     
     def download_file(self, user_ref, path):
         """Checks if the user is allowed to access the file. If the path is available and

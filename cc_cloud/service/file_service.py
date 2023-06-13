@@ -53,9 +53,11 @@ class FileService:
                     filepath = self.get_full_filepath(user_ref, filename)
                     try:
                         os.makedirs(os.path.dirname(filepath))
+                        os.system(f"chown -R {user_ref}:{user_ref} {self.get_user_upload_directory(user_ref)}")
                     except OSError:
                         pass
                     file.save(filepath)
+                    shutil.chown(filepath, user_ref, user_ref)
     
     
     def delete_file(self, user_ref, path):

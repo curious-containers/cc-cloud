@@ -19,9 +19,6 @@ class FilesystemService:
         self.filesystem_dir = conf.d.get('filesystem_directory', '/var/lib/cc_cloud/filesystems')
         self.user_storage_limit = conf.d.get('user_storage_limit', 52428800)
         
-        self.root_uid = pwd.getpwnam('root').pw_uid
-        self.root_gid = pwd.getpwnam('root').pw_gid
-        
     def create(self, fs_name, size=None):
         """Creates a new File image and reserves storage space for it.
         The file will be formated as a filesystem.
@@ -55,14 +52,13 @@ class FilesystemService:
         :type username: str
         """
         home_dir = os.path.join(self.userhome_directory, username)
-        os.chown(home_dir, self.root_uid, self.root_gid)
+        shutil.chown(home_dir, 'root', 'root')
+        os.system(f"chmod -R 751 {home_dir}")
         
         filesystem = self.get_filepath(username)
         mountpoint = self.get_mountpoint(username)
-        user_uid = pwd.getpwnam(username).pw_uid
-        user_gid = pwd.getpwnam(username).pw_gid
-        os.chown(filesystem, user_uid, user_gid)
-        os.chown(mountpoint, user_uid, user_gid)
+        shutil.chown(filesystem, username, username)
+        shutil.chown(mountpoint, username, username)
     
     def filessystem_exists(self, fs_name):
         """Check if the filesystem already exists.

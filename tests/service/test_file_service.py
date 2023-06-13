@@ -94,6 +94,7 @@ def test_delete_file_failure_dir(user_ref, file_service):
     assert result == False
     
 
+@patch('cc_cloud.service.file_service.shutil.chown', Mock())
 @patch.object(FilesystemService, "exists_or_create", Mock(return_value=True))
 def test_upload_file(user_ref, file_service):
     file1 = FileStorage(filename='/some/path/file1.txt')

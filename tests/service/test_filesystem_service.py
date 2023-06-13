@@ -52,10 +52,12 @@ def test_delete(mock_remove, fs_service, fs_name):
     mock_remove.assert_called_once_with('/test/filesystems/testuser')
 
 
+@patch.object(FilesystemService, "set_directory_owner")
 @patch('os.system')
-def test_mount(mock_system, fs_service, fs_name):        
+def test_mount(mock_system, mock_set_directory_owner, fs_service, fs_name):        
     fs_service.mount(fs_name)
     mock_system.assert_called_once_with("mount '/test/filesystems/testuser' '/test/users/testuser/cloud'")
+    mock_set_directory_owner.assert_called_once_with(fs_name)
 
 
 @patch('os.system')

@@ -11,6 +11,7 @@ from cc_agency.broker.auth import Auth
 from cc_cloud.version import VERSION as CLOUD_VERSION
 from cc_cloud.service.file_service import FileService
 from cc_cloud.routes.routes import cloud_routes
+from cc_cloud.service.cloud_service import CloudService
 
 
 DESCRIPTION = 'CC-Cloud webinterface'
@@ -30,6 +31,7 @@ conf = Conf(args.conf_file)
 mongo = Mongo(conf)
 auth = Auth(conf, mongo)
 file_manager = FileService(conf)
+cloud = CloudService(conf, mongo)
 
 @app.route('/', methods=['GET'])
 def get_root():
@@ -49,4 +51,4 @@ def get_version():
         user.authentication_cookie
     )
     
-cloud_routes(app, auth, file_manager)
+cloud_routes(app, auth, cloud)

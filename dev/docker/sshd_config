@@ -1,0 +1,14 @@
+Include /etc/ssh/sshd_config.d/*.conf
+
+KbdInteractiveAuthentication no
+UsePAM yes
+X11Forwarding yes
+PrintMotd no
+AcceptEnv LANG LC_*
+
+Subsystem	sftp	internal-sftp
+Match User cloud-*
+    ChrootDirectory %h
+    X11Forwarding no
+    AllowTcpForwarding no
+    ForceCommand internal-sftp

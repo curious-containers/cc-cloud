@@ -17,11 +17,22 @@ trustee:
   password: "SECRET"
 
 mongo:
+  host: "localhost"
   db: "ccagency"
   username: "ccadmin"
   password: "SECRET"
 
-#cloud:
-#  cc_cloud_directory: '/var/lib/cc_cloud'
-#  upload_directory: '/var/lib/cc_cloud/users'
-#  user_storage_limit: '50M'
+cloud:
+  enable: true
+  host: 192.168.121.128
+  sshPort: 22
+  httpPort: 5050
+  httpsPort: 5051
+  enableHttps: false
+  requireHttps: false
+  username: 'cloudadmin'
+  password: 'cloudpassword'
+  upload_directory_name: 'cloud'
+  userhome_directory: '/var/lib/cc_cloud/home'
+  filesystem_directory: '/var/lib/cc_cloud/filesystems'
+  user_storage_limit: 52428800

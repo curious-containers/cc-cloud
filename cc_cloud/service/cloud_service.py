@@ -1,4 +1,4 @@
-
+from sshpubkeys import SSHKey
 from cc_cloud.service.filesystem_service import FilesystemService
 from cc_cloud.service.file_service import FileService
 from cc_cloud.system.local_user import LocalUser
@@ -141,8 +141,15 @@ class CloudService:
         :param pub_key: public ssh-key, that will be added to the authorized_keys file
         :type pub_key: str
         """
+        try:
+            ssh = SSHKey(pub_key)
+            ssh.parse()
+        except Exception:
+            return False
+        
         _, local_user = self.local_user_exists_or_create(user)
         local_user.set_authorized_key(pub_key)
+        return True
     
     
     ## only for admin users

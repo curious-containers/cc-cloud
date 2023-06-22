@@ -49,6 +49,17 @@ def cloud_routes(app, auth, cloud_service):
         return create_flask_response(response_string, auth, user.authentication_cookie)
     
     
+    @app.route('/public_key', methods=['PUT'])
+    def add_public_key():
+        user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
+        public_key = request.args.get('key')
+        
+        added = cloud_service.set_local_user_authorized_key(user, public_key)
+        response_string = 'ok' if added else 'public key not valid'
+                
+        return create_flask_response(response_string, auth, user.authentication_cookie)
+    
+    
     @app.route('/create_user', methods=['GET'])
     def create_user():
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)

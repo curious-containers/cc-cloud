@@ -41,7 +41,10 @@ class CloudService:
         :return: user reference
         :rtype: str
         """
-        return self.user_prefix + '-' + user.username
+        if isinstance(user, dict):
+            return self.user_prefix + '-' + user.username
+        elif isinstance(user, str):
+            return self.user_prefix + '-' + user            
     
     
     def local_user_exists_or_create(self, user):
@@ -73,6 +76,10 @@ class CloudService:
             'size_limit': size_limit,
         }
         self.mongo.db['cloud_users'].update_one({'username': username}, {'$set': cloud_users}, upsert=True)
+    
+    
+    def get_local_user_from_db(self, username):
+        return self.mongo.db['cloud_users'].find_one({'username': username})
     
     
     ## cloud storage actions
@@ -154,6 +161,26 @@ class CloudService:
     
     ## only for admin users
     
+    def set_size_limit(self, user, change_user, size):
+        if not user.is_admin:
+            return False
+        
+        db_user = self.get_local_user_from_db(change_user)
+        if not db_user:
+            return False
+        
+        change_user_ref = self.get_user_ref(change_user)
+        current_size_limit = self.filesystem_service.get_size(change_user_ref)
+        if size > current_size_limit:
+            self.filesystem_service.increse_size(change_user_ref, size)
+        elif size < current_size_limit:
+            self.filesystem_service.reduce_size(change_user_ref, size)
+        
+        self.mongo.db['cloud_users'].update_one({'username': change_user}, {'$set': {'size_limit': size}}, upsert=True)
+        
+        return True
+        
+    
     def create_user(self, user, create_username):
         if not user.is_admin:
             return False
@@ -179,10 +206,8 @@ class CloudService:
         if not user.is_admin:
             return False
         
-        remove_user = Auth.User(remove_username, False)
-        user_ref = self.get_user_ref(remove_user)
-        
-        self.mongo.db['cloud_users'].delete_one({'username': remove_user.username})
+        user_ref = self.get_user_ref(remove_username)
+        self.mongo.db['cloud_users'].delete_one({'username': remove_username})
         
         self.filesystem_service.umount(user_ref)
         self.filesystem_service.delete(user_ref)

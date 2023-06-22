@@ -60,6 +60,18 @@ def cloud_routes(app, auth, cloud_service):
         return create_flask_response(response_string, auth, user.authentication_cookie)
     
     
+    @app.route('/size_limit', methods=['GET'])
+    def set_size_limit():
+        user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
+        change_user = request.args.get('username')
+        size = request.args.get('size')
+        
+        edited = cloud_service.set_size_limit(user, change_user, int(size))
+        response_string = 'ok' if edited else 'could not change the size'
+                
+        return create_flask_response(response_string, auth, user.authentication_cookie)
+    
+    
     @app.route('/create_user', methods=['GET'])
     def create_user():
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)

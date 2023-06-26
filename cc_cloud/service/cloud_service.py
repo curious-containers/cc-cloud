@@ -1,4 +1,4 @@
-
+from sshpubkeys import SSHKey
 from cc_cloud.service.filesystem_service import FilesystemService
 from cc_cloud.service.file_service import FileService
 from cc_cloud.system.local_user import LocalUser
@@ -41,7 +41,10 @@ class CloudService:
         :return: user reference
         :rtype: str
         """
-        return self.user_prefix + '-' + user.username
+        if isinstance(user, Auth.User):
+            return self.user_prefix + '-' + user.username
+        elif isinstance(user, str):
+            return self.user_prefix + '-' + user            
     
     
     def local_user_exists_or_create(self, user):
@@ -73,6 +76,10 @@ class CloudService:
             'size_limit': size_limit,
         }
         self.mongo.db['cloud_users'].update_one({'username': username}, {'$set': cloud_users}, upsert=True)
+    
+    
+    def get_local_user_from_db(self, username):
+        return self.mongo.db['cloud_users'].find_one({'username': username})
     
     
     ## cloud storage actions
@@ -141,13 +148,91 @@ class CloudService:
         :param pub_key: public ssh-key, that will be added to the authorized_keys file
         :type pub_key: str
         """
+        try:
+            ssh = SSHKey(pub_key)
+            ssh.parse()
+        except Exception:
+            return False
+        
         _, local_user = self.local_user_exists_or_create(user)
         local_user.set_authorized_key(pub_key)
+        return True
+    
+    
+    def get_storage_usage(self, user):
+        """
+        Get the current storage usage for a user.
+
+        :param user: The user for whom to retrieve the storage usage.
+        :type user: cc_agency.broker.auth.Auth.User
+        :return: The storage usage in bytes.
+        :rtype: int
+        """
+        user_ref = self.get_user_ref(user)
+        try:
+            return self.filesystem_service.get_storage_usage(user_ref)
+        except TypeError:
+            return 0
+    
+    
+    def get_size_limit(self, user):
+        """
+        Get the size limit for a user.
+
+        :param user: The user for whom to retrieve the size limit.
+        :type user: cc_agency.broker.auth.Auth.User
+        :return: The size limit in bytes.
+        :rtype: int
+        """
+        user_ref = self.get_user_ref(user)
+        return self.filesystem_service.get_size(user_ref)
     
     
     ## only for admin users
     
+    def set_size_limit(self, user, change_user, size):
+        """
+        Set the size limit for a user.
+
+        :param user: The user making the size limit change. Should be an admin user.
+        :type user: cc_agency.broker.auth.Auth.User
+        :param change_user: The user for whom the size limit will be changed.
+        :type change_user: cc_agency.broker.auth.Auth.User
+        :param size: The new size limit in bytes.
+        :type size: int
+        :return: True if the size limit was successfully changed, False otherwise.
+        :rtype: bool
+        """
+        if not user.is_admin:
+            return False
+        
+        db_user = self.get_local_user_from_db(change_user)
+        if not db_user:
+            return False
+        
+        change_user_ref = self.get_user_ref(change_user)
+        current_size_limit = self.filesystem_service.get_size(change_user_ref)
+        if size > current_size_limit:
+            self.filesystem_service.increse_size(change_user_ref, size)
+        elif size < current_size_limit:
+            self.filesystem_service.reduce_size(change_user_ref, size)
+        
+        self.mongo.db['cloud_users'].update_one({'username': change_user}, {'$set': {'size_limit': size}}, upsert=True)
+        
+        return True
+        
+    
     def create_user(self, user, create_username):
+        """
+        Create a new user.
+
+        :param user: The user creating the new user. Should be an admin user.
+        :type user: cc_agency.broker.auth.Auth.User
+        :param create_username: The username for the new user.
+        :type create_username: str
+        :return: True if the user was successfully created, False otherwise.
+        :rtype: bool
+        """
         if not user.is_admin:
             return False
         
@@ -172,10 +257,8 @@ class CloudService:
         if not user.is_admin:
             return False
         
-        remove_user = Auth.User(remove_username, False)
-        user_ref = self.get_user_ref(remove_user)
-        
-        self.mongo.db['cloud_users'].delete_one({'username': remove_user.username})
+        user_ref = self.get_user_ref(remove_username)
+        self.mongo.db['cloud_users'].delete_one({'username': remove_username})
         
         self.filesystem_service.umount(user_ref)
         self.filesystem_service.delete(user_ref)

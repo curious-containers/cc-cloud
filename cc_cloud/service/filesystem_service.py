@@ -25,7 +25,7 @@ class FilesystemService:
 
         :param fs_name: Creates a filesystem with the name fs_name
         :type fs_name: str
-        :param size: Size of the filesystem, defaults to None
+        :param size: Size (bytes) of the filesystem, defaults to None
         :type size: int, optional
         """
         filepath = self.get_filepath(fs_name)
@@ -134,7 +134,7 @@ class FilesystemService:
 
         :param fs_name: Increse size of the filesystem with the name fs_name
         :type fs_name: str
-        :param size: The size of the file system is set to the specified size
+        :param size: The size (bytes) of the file system is set to the specified size
         :type size: int
         """
         filepath = self.get_filepath(fs_name)
@@ -150,7 +150,7 @@ class FilesystemService:
 
         :param fs_name: Reduce size of the filesystem with the name fs_name
         :type fs_name: str
-        :param size: The size of the file system is set to the specified size
+        :param size: The size (bytes) of the file system is set to the specified size.
         :type size: int
         """
         if self.is_mounted(fs_name):
@@ -159,7 +159,7 @@ class FilesystemService:
         self.create(fs_name, size)
     
     def get_size(self, fs_name):
-        """Get the size of the filesystem.
+        """Get the size limit of the filesystem in bytes.
 
         :param fs_name: Get size of the filesystem with the name fs_name
         :type fs_name: str
@@ -168,6 +168,20 @@ class FilesystemService:
         """
         filepath = self.get_filepath(fs_name)
         return os.path.getsize(filepath)
+    
+    def get_storage_usage(self, fs_name):
+        """Get the current usage of the cloud storage in bytes.
+
+        :param fs_name: Get usage of the cloud storage with the name fs_name
+        :type fs_name: str
+        :return: Usage of cloud storage
+        :rtype: int
+        """
+        if not self.is_mounted(fs_name):
+            self.mount(fs_name)
+        mountpoint = self.get_mountpoint(fs_name)
+        total, used, free = shutil.disk_usage(mountpoint)
+        return used
     
     def get_loop_device(self, filepath):
         """Get the loop device of the mounted filesystem.

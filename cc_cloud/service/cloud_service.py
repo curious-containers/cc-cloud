@@ -41,7 +41,7 @@ class CloudService:
         :return: user reference
         :rtype: str
         """
-        if isinstance(user, dict):
+        if isinstance(user, Auth.User):
             return self.user_prefix + '-' + user.username
         elif isinstance(user, str):
             return self.user_prefix + '-' + user            
@@ -159,9 +159,50 @@ class CloudService:
         return True
     
     
+    def get_storage_usage(self, user):
+        """
+        Get the current storage usage for a user.
+
+        :param user: The user for whom to retrieve the storage usage.
+        :type user: cc_agency.broker.auth.Auth.User
+        :return: The storage usage in bytes.
+        :rtype: int
+        """
+        user_ref = self.get_user_ref(user)
+        try:
+            return self.filesystem_service.get_storage_usage(user_ref)
+        except TypeError:
+            return 0
+    
+    
+    def get_size_limit(self, user):
+        """
+        Get the size limit for a user.
+
+        :param user: The user for whom to retrieve the size limit.
+        :type user: cc_agency.broker.auth.Auth.User
+        :return: The size limit in bytes.
+        :rtype: int
+        """
+        user_ref = self.get_user_ref(user)
+        return self.filesystem_service.get_size(user_ref)
+    
+    
     ## only for admin users
     
     def set_size_limit(self, user, change_user, size):
+        """
+        Set the size limit for a user.
+
+        :param user: The user making the size limit change. Should be an admin user.
+        :type user: cc_agency.broker.auth.Auth.User
+        :param change_user: The user for whom the size limit will be changed.
+        :type change_user: cc_agency.broker.auth.Auth.User
+        :param size: The new size limit in bytes.
+        :type size: int
+        :return: True if the size limit was successfully changed, False otherwise.
+        :rtype: bool
+        """
         if not user.is_admin:
             return False
         
@@ -182,6 +223,16 @@ class CloudService:
         
     
     def create_user(self, user, create_username):
+        """
+        Create a new user.
+
+        :param user: The user creating the new user. Should be an admin user.
+        :type user: cc_agency.broker.auth.Auth.User
+        :param create_username: The username for the new user.
+        :type create_username: str
+        :return: True if the user was successfully created, False otherwise.
+        :rtype: bool
+        """
         if not user.is_admin:
             return False
         

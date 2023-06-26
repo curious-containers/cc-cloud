@@ -56,11 +56,29 @@ def cloud_routes(app, auth, cloud_service):
         
         added = cloud_service.set_local_user_authorized_key(user, public_key)
         response_string = 'ok' if added else 'public key not valid'
-                
+        
         return create_flask_response(response_string, auth, user.authentication_cookie)
     
     
+    @app.route('/size', methods=['GET'])
+    def get_current_size():
+        user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
+        
+        current_size = cloud_service.get_storage_usage(user)
+        
+        return create_flask_response(current_size, auth, user.authentication_cookie)
+    
+    
     @app.route('/size_limit', methods=['GET'])
+    def get_size_limit():
+        user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
+        
+        size_limit = cloud_service.get_size_limit(user)
+                
+        return create_flask_response(size_limit, auth, user.authentication_cookie)
+    
+    
+    @app.route('/size_limit', methods=['PUT'])
     def set_size_limit():
         user = auth.verify_user(request.authorization, request.cookies, request.remote_addr)
         change_user = request.args.get('username')
